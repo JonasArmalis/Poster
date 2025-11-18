@@ -1,6 +1,6 @@
-import type { User } from "./User";
+import type { User } from './User'
 
 export interface LoginResponse {
-  accessToken: string,
+  accessToken: string
   user: User
 }

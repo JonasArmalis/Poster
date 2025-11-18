@@ -1,5 +1,8 @@
+export type UserRole = 'admin' | 'worker'
+
 export interface User {
+  id: number
   email: string
   name: string
-  id: number
+  role: UserRole
 }
