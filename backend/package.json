@@ -1,0 +1,17 @@
+{
+   "name": "posts-backend",
+   "version": "1.0.0",
+   "private": true,
+   "scripts": {
+  "dev": "json-server-auth --watch db.json --routes routes.json --port 4000 --delay 300",
+  "start": "npm run dev"
+   },
+   "devDependencies": {
+      "json-server": "^0.17.4",
+      "json-server-auth": "^2.1.0"
+   },
+   "dependencies": {
+      "bcryptjs": "^3.0.3",
+      "express": "^4.19.2"
+   }
+}
