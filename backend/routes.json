@@ -2,6 +2,5 @@
 {
   "/api/*": "/$1",
   "/users*": "/users$1",
-  "/posts*": "/posts$1",
-  "/authors*": "/authors$1"
+  "/posts*": "/posts$1"
 }

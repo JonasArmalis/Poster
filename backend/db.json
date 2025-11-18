@@ -3,10 +3,25 @@
     {
       "email": "admin@poster.com",
       "password": "$2a$12$Ls5CzCIQCQp0.MqdIk3EC.JgtvydAfS2olbJuTfLOHM8An6ZSGxsq",
-      "name": "Regular user",
+      "name": "Admin User",
+      "role": "admin",
       "id": 1
+    },
+    {
+      "email": "jonas@poster.com",
+      "password": "$2a$12$FH8slQK.CsU74u5eN2WVvO0kfIpA7CLJh5Aa0vMNghpbmDrbZqUQK",
+      "name": "Jonas Armalis",
+      "role": "worker",
+      "id": 2
+    },
+    {
+      "email": "karolis@poster.com",
+      "password": "$2a$12$uVc5S.yQYHUFF8zRQ2w22OJnLDlmm2MKbkhX4lY0uRzabl4OjhgYO",
+      "name": "Karolis Daunoravicius",
+      "role": "worker",
+      "id": 3,
+      "updated_at": "2025-11-19T00:12:40Z"
     }
   ],
-  "authors": [],
   "posts": []
 }
