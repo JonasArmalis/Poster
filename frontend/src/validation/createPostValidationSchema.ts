@@ -21,6 +21,5 @@ export const createPostValidationSchema = yup.object({
       'Content must consist of at least 5 non-space characters',
       (value) => value !== undefined && value.trim().length >= 5
     )
-    .max(1000, 'Content cannot be more than 1000 characters'),
-  authorId: yup.number().required('Author is required')
+    .max(1000, 'Content cannot be more than 1000 characters')
 })

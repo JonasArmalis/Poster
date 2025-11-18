@@ -1,12 +1,11 @@
-import type { Author } from "./Author"
+import type { User } from './User'
 
 export interface Post {
   id: number
   title: string
   body: string
-  authorId: number
+  created_at: string
+  updated_at: string
   userId: number
-  created_at: Date
-  updated_at: Date
-  author: Author
+  user: User
 }
