@@ -12,7 +12,8 @@
       "password": "$2a$12$FH8slQK.CsU74u5eN2WVvO0kfIpA7CLJh5Aa0vMNghpbmDrbZqUQK",
       "name": "Jonas Armalis",
       "role": "worker",
-      "id": 2
+      "id": 2,
+      "updated_at": "2025-11-25T21:56:04.369Z"
     },
     {
       "email": "karolis@poster.com",
@@ -23,5 +24,22 @@
       "updated_at": "2025-11-19T00:12:40Z"
     }
   ],
-  "posts": []
+  "posts": [
+    {
+      "id": 1,
+      "title": "Hello world",
+      "body": "This is a test speaking",
+      "userId": 1,
+      "created_at": "2025-11-25T21:22:28.750Z",
+      "updated_at": "2025-11-25T21:22:28.750Z"
+    },
+    {
+      "id": 2,
+      "title": "13132",
+      "body": "123312",
+      "userId": 3,
+      "created_at": "2025-11-25T21:53:46.850Z",
+      "updated_at": "2025-11-25T21:53:46.850Z"
+    }
+  ]
 }

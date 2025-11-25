@@ -1,17 +1,19 @@
 {
-   "name": "posts-backend",
-   "version": "1.0.0",
-   "private": true,
-   "scripts": {
-  "dev": "json-server-auth --watch db.json --routes routes.json --port 4000 --delay 300",
-  "start": "npm run dev"
-   },
-   "devDependencies": {
-      "json-server": "^0.17.4",
-      "json-server-auth": "^2.1.0"
-   },
-   "dependencies": {
-      "bcryptjs": "^3.0.3",
-      "express": "^4.19.2"
-   }
+  "name": "posts-backend",
+  "version": "1.0.0",
+  "description": "Poster app backend",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
 }
