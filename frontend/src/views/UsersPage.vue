@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import type { User } from '@/interfaces/User'
 import { getAllUsers } from '@/services/UserService'
 import { useNotifyStore } from '@/stores/notification.store'
@@ -13,9 +13,18 @@ const users = ref<User[]>([])
 const infoMessage = ref<string>()
 const loading = ref(false)
 
+const filterRole = ref<'all' | 'admin' | 'worker'>('all')
+
 const notifyStore = useNotifyStore()
 const authStore = useAuthStore()
 const modalStore = useModalStore()
+
+const filteredUsers = computed(() => {
+  if (filterRole.value === 'all') {
+    return users.value
+  }
+  return users.value.filter((u) => u.role === filterRole.value)
+})
 
 const fetchUsers = async () => {
   try {
@@ -65,7 +74,21 @@ watch(
 <template>
   <div style="padding: 20px">
     <h1 class="title is-3">User Management</h1>
+    <p class="subtitle is-6">Only admins can access this page.</p>
+
     <button class="button is-link" @click="openCreateUserModal">Create User</button>
+
+    <div class="field is-grouped mt-4 mb-2">
+      <div class="control">
+        <div class="select">
+          <select v-model="filterRole">
+            <option value="all">Show all roles</option>
+            <option value="admin">Only admins</option>
+            <option value="worker">Only workers</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
     <div v-if="loading" class="mt-4">Loading users...</div>
 
@@ -73,7 +96,7 @@ watch(
       <strong>{{ infoMessage }}</strong>
     </div>
 
-    <table v-if="users.length > 0" class="table is-fullwidth is-striped mt-4">
+    <table v-if="filteredUsers.length > 0" class="table is-fullwidth is-striped mt-4">
       <thead>
         <tr>
           <th>Name</th>
@@ -83,7 +106,7 @@ watch(
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.id">
+        <tr v-for="user in filteredUsers" :key="user.id">
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
           <td>

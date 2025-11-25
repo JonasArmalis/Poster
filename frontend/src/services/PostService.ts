@@ -5,43 +5,59 @@ import { useAuthStore } from '@/stores/authStore'
 
 const END_POINT = '/posts'
 
+type SortOrder = 'asc' | 'desc'
+
+interface PostQueryOptions {
+  sortOrder?: SortOrder
+  dateFrom?: string
+  dateTo?: string
+}
+
 const getAllPosts = async (
   page: number,
   limit: number,
-  searchValue: String
+  searchValue: string,
+  options: PostQueryOptions = {}
 ): Promise<{ data: Post[]; totalAmount: number }> => {
   const response = await httpClient.get<Post[]>(END_POINT, {
     params: {
       _expand: 'user',
       _page: page,
       _limit: limit,
-      q: searchValue
+      q: searchValue,
+      order: options.sortOrder,
+      dateFrom: options.dateFrom,
+      dateTo: options.dateTo
     }
   })
 
   return {
     data: response.data,
-    totalAmount: response.headers['x-total-count']
+    totalAmount: Number(response.headers['x-total-count'] || 0)
   }
 }
 
 const getPostsByUser = async (
   userId: number,
   page: number,
-  limit: number
+  limit: number,
+  options: PostQueryOptions = {}
 ): Promise<{ data: Post[]; totalAmount: number }> => {
   const response = await httpClient.get<Post[]>(END_POINT, {
     params: {
       _expand: 'user',
       _page: page,
       _limit: limit,
-      userId
+      userId,
+      order: options.sortOrder,
+      dateFrom: options.dateFrom,
+      dateTo: options.dateTo
     }
   })
 
   return {
     data: response.data,
-    totalAmount: response.headers['x-total-count']
+    totalAmount: Number(response.headers['x-total-count'] || 0)
   }
 }
 

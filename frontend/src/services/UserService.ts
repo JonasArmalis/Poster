@@ -67,14 +67,11 @@ const updateUserRole = async (id: number, role: UserRole): Promise<User> => {
 const deleteUser = async (id: number): Promise<void> => {
   const authStore = useAuthStore()
 
-  await httpClient.delete<void>(
-    `${END_POINT}/${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${authStore.accessToken}`
-      }
+  await httpClient.delete<void>(`${END_POINT}/${id}`, {
+    headers: {
+      Authorization: `Bearer ${authStore.accessToken}`
     }
-  )
+  })
 }
 
 export { getAllUsers, createUser, updateUserRole, deleteUser }
