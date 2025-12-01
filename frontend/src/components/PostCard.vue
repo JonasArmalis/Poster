@@ -35,6 +35,13 @@ const canDelete = computed(() => {
   return authStore.isAdmin || isOwner.value
 })
 
+const previewContent = computed(() => {
+  const text = props.post.body ?? ''
+  const maxLength = 150
+  if (text.length <= maxLength) return text
+  return text.slice(0, maxLength) + '...'
+})
+
 const redirectToPost = () => {
   router.push({ path: `/posts/${props.post.id}` })
 }
@@ -58,7 +65,14 @@ const onEditButtonClick = async () => {
 </script>
 
 <template>
-  <div class="card" style="margin-top: 10px; margin-bottom: 10px">
+  <div
+    class="card clickable-card"
+    style="margin-top: 10px; margin-bottom: 10px"
+    @click="redirectToPost"
+    tabindex="0"
+    @keydown.enter="redirectToPost"
+    @keydown.space.prevent="redirectToPost"
+  >
     <div class="card-content">
       <div class="media">
         <div class="media-content">
@@ -69,21 +83,23 @@ const onEditButtonClick = async () => {
         </div>
       </div>
       <div class="content">
+        <p class="preview">
+          {{ previewContent }}
+        </p>
         <time>{{ displayDate }}</time>
       </div>
     </div>
     <footer class="card-footer">
-      <a @click="redirectToPost" class="card-footer-item">View details</a>
       <a
         v-if="authStore.isUserLoggedIn && canEdit"
-        @click="onEditButtonClick"
+        @click.stop="onEditButtonClick"
         class="card-footer-item"
       >
         Edit
       </a>
       <a
         v-if="authStore.isUserLoggedIn && canDelete"
-        @click="onDeleteButtonClick"
+        @click.stop="onDeleteButtonClick"
         class="card-footer-item"
       >
         Delete
@@ -91,3 +107,15 @@ const onEditButtonClick = async () => {
     </footer>
   </div>
 </template>
+
+<style scoped>
+.clickable-card {
+  cursor: pointer;
+}
+
+.preview {
+  margin-bottom: 0.5rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+</style>

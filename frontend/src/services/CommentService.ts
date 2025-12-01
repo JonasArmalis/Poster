@@ -1,0 +1,54 @@
+import httpClient from './HttpClient'
+import type { Comment } from '@/interfaces/Comment'
+import { useAuthStore } from '@/stores/authStore'
+import { format } from 'date-fns'
+
+const END_POINT = '/comments'
+
+const getCommentsForPost = async (postId: number): Promise<Comment[]> => {
+  const response = await httpClient.get<Comment[]>(END_POINT, {
+    params: {
+      postId,
+      _expand: 'user'
+    }
+  })
+
+  return response.data
+}
+
+const createComment = async (postId: number, body: string): Promise<Comment> => {
+  const authStore = useAuthStore()
+
+  if (authStore.userId === null) {
+    throw new Error('Not logged in')
+  }
+
+  const response = await httpClient.post<Comment>(
+    END_POINT,
+    {
+      postId,
+      body,
+      created_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
+      updated_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${authStore.accessToken}`
+      }
+    }
+  )
+
+  return response.data
+}
+
+const deleteComment = async (id: number): Promise<void> => {
+  const authStore = useAuthStore()
+
+  await httpClient.delete<void>(`${END_POINT}/${id}`, {
+    headers: {
+      Authorization: `Bearer ${authStore.accessToken}`
+    }
+  })
+}
+
+export { getCommentsForPost, createComment, deleteComment }
