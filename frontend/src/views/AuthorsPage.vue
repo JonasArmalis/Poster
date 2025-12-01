@@ -32,7 +32,6 @@ onMounted(fetchUsers)
 <template>
   <div style="padding: 20px">
     <h1 class="title is-3">Authors</h1>
-    <p class="subtitle is-6">Every user is an author.</p>
 
     <div v-if="loading">Loading authors...</div>
 

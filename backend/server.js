@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 const { readDb } = require('./database')
 const userRoutes = require('./routes/users')
 const postRoutes = require('./routes/posts')
+const commentRoutes = require('./routes/comments')
 const { JWT_SECRET } = require('./middleware/auth')
 
 const app = express()
@@ -63,6 +64,7 @@ app.post('/login', async (req, res) => {
 
 app.use('/users', userRoutes)
 app.use('/posts', postRoutes)
+app.use('/comments', commentRoutes)
 
 app.get('/authors', async (_req, res) => {
   try {

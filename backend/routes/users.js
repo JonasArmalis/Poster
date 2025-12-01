@@ -118,6 +118,7 @@ router.delete('/:id', authRequired, requireAdmin, async (req, res) => {
 
     db.users.splice(index, 1)
     db.posts = db.posts.filter((p) => p.userId !== id)
+    db.comments = db.comments.filter((c) => c.userId !== id)
 
     await writeDb(db)
 

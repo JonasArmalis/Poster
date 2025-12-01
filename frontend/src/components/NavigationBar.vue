@@ -20,7 +20,8 @@ const onLogoutButtonClick = async () => {
       <div class="navbar-start">
         <RouterLink class="navbar-item" to="/posts">Posts</RouterLink>
         <RouterLink class="navbar-item" to="/authors">Authors</RouterLink>
-        <RouterLink v-if="authStore.isAdmin" class="navbar-item" to="/users"> Users </RouterLink>
+        <RouterLink v-if="authStore.isAdmin" class="navbar-item" to="/users">Users</RouterLink>
+        <RouterLink class="navbar-item" to="/sitemap">Sitemap</RouterLink>
       </div>
       <div class="navbar-end">
         <div class="navbar-item">

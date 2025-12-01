@@ -7,6 +7,8 @@ import NotFoundPage from '@/views/NotFoundPage.vue'
 import UsersPage from '@/views/UsersPage.vue'
 import AuthorPostsPage from '@/views/AuthorPostsPage.vue'
 import { useAuthStore } from '@/stores/authStore'
+import SitemapPage from '@/views/SitemapPage.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,7 +25,9 @@ const router = createRouter({
       component: UsersPage,
       meta: { requiresAdmin: true }
     },
-    { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage }
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
+    { path: '/sitemap', name: 'sitemap', component: SitemapPage }
+
   ]
 })
 
