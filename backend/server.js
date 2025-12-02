@@ -1,3 +1,5 @@
+// backend/server.js
+
 const express = require('express')
 const cors = require('cors')
 const bcrypt = require('bcrypt')
@@ -13,7 +15,14 @@ const prisma = new PrismaClient()
 const app = express()
 const PORT = process.env.PORT || 4000
 
-app.use(cors())
+// CORS su X-Total-Count headerio „išleidimu“, kad frontend galėtų jį nuskaityti
+app.use(
+  cors({
+    origin: '*', // dev režime leidžiam viską
+    exposedHeaders: ['X-Total-Count']
+  })
+)
+
 app.use(express.json())
 
 app.get('/', (_req, res) => {
