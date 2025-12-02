@@ -13,9 +13,12 @@ const { state } = storeToRefs(modalStore)
 
 <template>
   <div class="layout">
-    <header>
-      <NavigationBar />
-    </header>
+  <header>
+    <NavigationBar v-if="$route.path !== '/login'" />
+    <div v-else class="login-logo">
+      <img src="/logo.svg" alt="Poster Logo" />
+    </div>
+  </header>
 
     <main class="page-content">
       <RouterView />
@@ -56,5 +59,18 @@ header {
   padding: 1rem 1.5rem;
   border-top: 1px solid #e5e5e5;
   font-size: 0.9rem;
+}
+
+.login-logo {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  text-align: center;
+}
+
+.login-logo img {
+  height: 80px;
 }
 </style>
