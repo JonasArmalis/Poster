@@ -1,21 +1,25 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
+const { PrismaClient } = require('@prisma/client')
 
-const { readDb, writeDb } = require('../database')
 const { authRequired } = require('../middleware/auth')
 const { requireAdmin } = require('../middleware/role')
 
+const prisma = new PrismaClient()
 const router = express.Router()
 
+// GET /users - tik adminams
 router.get('/', authRequired, requireAdmin, async (_req, res) => {
   try {
-    const db = await readDb()
-    const users = db.users.map((u) => ({
-      id: u.id,
-      email: u.email,
-      name: u.name,
-      role: u.role
-    }))
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true
+      },
+      orderBy: { id: 'asc' }
+    })
     res.json(users)
   } catch (err) {
     console.error('GET /users error:', err)
@@ -23,6 +27,7 @@ router.get('/', authRequired, requireAdmin, async (_req, res) => {
   }
 })
 
+// POST /users - sukurti naują vartotoją (tik adminas)
 router.post('/', authRequired, requireAdmin, async (req, res) => {
   const { name, email, password, role } = req.body || {}
 
@@ -33,74 +38,79 @@ router.post('/', authRequired, requireAdmin, async (req, res) => {
   }
 
   try {
-    const db = await readDb()
+    const existing = await prisma.user.findUnique({
+      where: { email }
+    })
 
-    if (db.users.some((u) => u.email === email)) {
+    if (existing) {
       return res.status(400).json({ message: 'User with this email already exists' })
     }
 
     const hashed = await bcrypt.hash(password, 10)
 
-    const newId =
-      db.users.length > 0 ? Math.max(...db.users.map((u) => Number(u.id))) + 1 : 1
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashed,
+        role
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        created_at: true,
+        updated_at: true
+      }
+    })
 
-    const now = new Date().toISOString()
-
-    const newUser = {
-      id: newId,
-      email,
-      name,
-      password: hashed,
-      role,
-      created_at: now,
-      updated_at: now
-    }
-
-    db.users.push(newUser)
-    await writeDb(db)
-
-    const { password: _pw, ...safeUser } = newUser
-    res.status(201).json(safeUser)
+    res.status(201).json(newUser)
   } catch (err) {
     console.error('POST /users error:', err)
     res.status(500).json({ message: 'Failed to create user' })
   }
 })
 
+// PATCH /users/:id - atnaujinti vartotojo duomenis (tik adminas)
 router.patch('/:id', authRequired, requireAdmin, async (req, res) => {
   const id = Number(req.params.id)
   const { role, name, email } = req.body || {}
 
   try {
-    const db = await readDb()
-    const user = db.users.find((u) => u.id === id)
+    const existing = await prisma.user.findUnique({
+      where: { id }
+    })
 
-    if (!user) {
+    if (!existing) {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    if (typeof role !== 'undefined') {
-      user.role = role
-    }
-    if (typeof name !== 'undefined') {
-      user.name = name
-    }
-    if (typeof email !== 'undefined') {
-      user.email = email
-    }
+    const updated = await prisma.user.update({
+      where: { id },
+      data: {
+        role: typeof role !== 'undefined' ? role : existing.role,
+        name: typeof name !== 'undefined' ? name : existing.name,
+        email: typeof email !== 'undefined' ? email : existing.email
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        created_at: true,
+        updated_at: true
+      }
+    })
 
-    user.updated_at = new Date().toISOString()
-
-    await writeDb(db)
-
-    const { password: _pw, ...safeUser } = user
-    res.json(safeUser)
+    res.json(updated)
   } catch (err) {
     console.error('PATCH /users/:id error:', err)
     res.status(500).json({ message: 'Failed to update user' })
   }
 })
 
+// DELETE /users/:id - ištrinti vartotoją (tik adminas)
 router.delete('/:id', authRequired, requireAdmin, async (req, res) => {
   const id = Number(req.params.id)
 
@@ -109,18 +119,18 @@ router.delete('/:id', authRequired, requireAdmin, async (req, res) => {
       return res.status(400).json({ message: 'You cannot delete your own account' })
     }
 
-    const db = await readDb()
-    const index = db.users.findIndex((u) => u.id === id)
+    const existing = await prisma.user.findUnique({
+      where: { id }
+    })
 
-    if (index === -1) {
+    if (!existing) {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    db.users.splice(index, 1)
-    db.posts = db.posts.filter((p) => p.userId !== id)
-    db.comments = db.comments.filter((c) => c.userId !== id)
-
-    await writeDb(db)
+    // Dėl onDelete: Cascade daug kas išsispręs automatiškai, bet galime būti tikri:
+    await prisma.comment.deleteMany({ where: { userId: id } })
+    await prisma.post.deleteMany({ where: { userId: id } })
+    await prisma.user.delete({ where: { id } })
 
     res.status(204).end()
   } catch (err) {

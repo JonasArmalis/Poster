@@ -1,7 +1,6 @@
 import httpClient from './HttpClient'
 import type { Comment } from '@/interfaces/Comment'
 import { useAuthStore } from '@/stores/authStore'
-import { format } from 'date-fns'
 
 const END_POINT = '/comments'
 
@@ -16,7 +15,7 @@ const getCommentsForPost = async (postId: number): Promise<Comment[]> => {
   return response.data
 }
 
-const createComment = async (postId: number, body: string): Promise<Comment> => {
+const createComment = async (postId: number, content: string): Promise<Comment> => {
   const authStore = useAuthStore()
 
   if (authStore.userId === null) {
@@ -27,9 +26,7 @@ const createComment = async (postId: number, body: string): Promise<Comment> => 
     END_POINT,
     {
       postId,
-      body,
-      created_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
-      updated_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'")
+      content
     },
     {
       headers: {

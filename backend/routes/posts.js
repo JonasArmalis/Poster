@@ -1,139 +1,109 @@
+// backend/routes/posts.js
+
 const express = require('express')
-const { readDb, writeDb } = require('../database')
+const { PrismaClient } = require('@prisma/client')
 const { authRequired } = require('../middleware/auth')
 
+const prisma = new PrismaClient()
 const router = express.Router()
 
-function includesText(haystack, needle) {
-  return haystack.toLowerCase().includes(needle.toLowerCase())
-}
+function buildWhere(query) {
+  const {
+    q,
+    userId,
+    dateFrom,
+    dateTo
+  } = query
 
-function attachUser(post, db) {
-  const user = db.users.find((u) => u.id === post.userId)
-  return {
-    ...post,
-    user: user
-      ? { id: user.id, email: user.email, name: user.name, role: user.role }
-      : null
+  const where = {}
+
+  // Teksto paieška
+  if (q && typeof q === 'string' && q.trim().length > 0) {
+    const search = q.trim()
+
+    where.OR = [
+      { title: { contains: search } },
+      { body:  { contains: search } }
+    ]
   }
-}
 
-function getEffectiveDate(post) {
-  const created = post.created_at ? new Date(post.created_at) : null
-  const updated = post.updated_at ? new Date(post.updated_at) : null
-
-  if (created && updated) {
-    return updated >= created ? updated : created
+  // Filtras pagal autorių
+  if (userId) {
+    const uid = Number(userId)
+    if (!isNaN(uid)) {
+      where.userId = uid
+    }
   }
-  return updated || created || null
-}
 
-router.get('/', async (req, res) => {
-  try {
-    const db = await readDb()
-    let posts = db.posts.slice()
-
-    const {
-      q,
-      userId,
-      dateFrom,
-      dateTo,
-      order
-    } = req.query
-
-    if (q && typeof q === 'string' && q.trim().length > 0) {
-      posts = posts.filter(
-        (p) =>
-          includesText(p.title || '', q) ||
-          includesText(p.body || '', q)
-      )
-    }
-
-    if (userId) {
-      const uid = Number(userId)
-      posts = posts.filter((p) => p.userId === uid)
-    }
-
-    const fromStr =
-      typeof dateFrom === 'string' && dateFrom.trim().length > 0
-        ? dateFrom.trim()
-        : null
-    const toStr =
-      typeof dateTo === 'string' && dateTo.trim().length > 0
-        ? dateTo.trim()
-        : null
-
-    let fromDate = null
-    let toDate = null
-
-    if (fromStr) {
-      const d = new Date(fromStr)
+  // Datos filtrai
+  if (
+    typeof dateFrom === 'string' && dateFrom.trim() ||
+    typeof dateTo === 'string' && dateTo.trim()
+  ) {
+    where.created_at = {}
+    if (dateFrom && dateFrom.trim()) {
+      const d = new Date(dateFrom.trim())
       if (!isNaN(d.getTime())) {
-        fromDate = d
+        where.created_at.gte = d
       }
     }
-
-    if (toStr) {
-      const d = new Date(toStr)
+    if (dateTo && dateTo.trim()) {
+      const d = new Date(dateTo.trim())
       if (!isNaN(d.getTime())) {
         d.setHours(23, 59, 59, 999)
-        toDate = d
+        where.created_at.lte = d
       }
     }
+  }
 
-    if (fromDate || toDate) {
-      posts = posts.filter((p) => {
-        const eff = getEffectiveDate(p)
-        if (!eff) return false
-        if (fromDate && eff < fromDate) return false
-        if (toDate && eff > toDate) return false
-        return true
+  return where
+}
+
+
+// GET /posts
+router.get('/', async (req, res) => {
+  try {
+    const page = Math.max(Number(req.query._page) || 1, 1)
+    const limit = Math.max(Number(req.query._limit) || 10, 1)
+    const skip = (page - 1) * limit
+
+    const sortOrder = req.query.order === 'asc' ? 'asc' : 'desc'
+    const where = buildWhere(req.query)
+
+    const [total, posts] = await Promise.all([
+      prisma.post.count({ where }),
+      prisma.post.findMany({
+        where,
+        orderBy: { created_at: sortOrder },
+        skip,
+        take: limit,
+        include: { user: true }
       })
-    }
-
-    const normalizedOrder = order === 'asc' ? 'asc' : 'desc'
-    posts.sort((a, b) => {
-      const aDate = getEffectiveDate(a)
-      const bDate = getEffectiveDate(b)
-      const aTime = aDate ? aDate.getTime() : 0
-      const bTime = bDate ? bDate.getTime() : 0
-      const cmp = aTime - bTime
-      return normalizedOrder === 'asc' ? cmp : -cmp
-    })
-
-    const total = posts.length
-
-    const page = Number(req.query._page) || 1
-    const limit = Number(req.query._limit) || 10
-    const start = (page - 1) * limit
-    const end = start + limit
-
-    let paged = posts.slice(start, end)
-
-    if (req.query._expand === 'user') {
-      paged = paged.map((p) => attachUser(p, db))
-    }
+    ])
 
     res.setHeader('X-Total-Count', String(total))
-    res.json(paged)
+    res.json(posts)
   } catch (err) {
     console.error('GET /posts error:', err)
     res.status(500).json({ message: 'Failed to load posts' })
   }
 })
 
+// GET /posts/:id
 router.get('/:id', async (req, res) => {
   const id = Number(req.params.id)
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid id' })
+  }
+
   try {
-    const db = await readDb()
-    const post = db.posts.find((p) => p.id === id)
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: { user: true }
+    })
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' })
-    }
-
-    if (req.query._expand === 'user') {
-      return res.json(attachUser(post, db))
     }
 
     res.json(post)
@@ -143,6 +113,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
+// POST /posts
 router.post('/', authRequired, async (req, res) => {
   const { title, body } = req.body || {}
 
@@ -151,23 +122,13 @@ router.post('/', authRequired, async (req, res) => {
   }
 
   try {
-    const db = await readDb()
-    const now = new Date().toISOString()
-
-    const newId =
-      db.posts.length > 0 ? Math.max(...db.posts.map((p) => Number(p.id))) + 1 : 1
-
-    const newPost = {
-      id: newId,
-      title,
-      body,
-      userId: req.user.id,
-      created_at: now,
-      updated_at: now
-    }
-
-    db.posts.push(newPost)
-    await writeDb(db)
+    const newPost = await prisma.post.create({
+      data: {
+        title,
+        body,
+        userId: req.user.id
+      }
+    })
 
     res.status(201).json(newPost)
   } catch (err) {
@@ -176,13 +137,17 @@ router.post('/', authRequired, async (req, res) => {
   }
 })
 
+// PATCH /posts/:id
 router.patch('/:id', authRequired, async (req, res) => {
   const id = Number(req.params.id)
   const { title, body } = req.body || {}
 
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid id' })
+  }
+
   try {
-    const db = await readDb()
-    const post = db.posts.find((p) => p.id === id)
+    const post = await prisma.post.findUnique({ where: { id } })
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' })
@@ -195,35 +160,36 @@ router.patch('/:id', authRequired, async (req, res) => {
       return res.status(403).json({ message: 'You cannot edit this post' })
     }
 
-    if (typeof title === 'string') {
-      post.title = title
-    }
-    if (typeof body === 'string') {
-      post.body = body
-    }
-    post.updated_at = new Date().toISOString()
+    const updated = await prisma.post.update({
+      where: { id },
+      data: {
+        title: typeof title === 'string' ? title : post.title,
+        body: typeof body === 'string' ? body : post.body
+      }
+    })
 
-    await writeDb(db)
-
-    res.json(post)
+    res.json(updated)
   } catch (err) {
     console.error('PATCH /posts/:id error:', err)
     res.status(500).json({ message: 'Failed to update post' })
   }
 })
 
+// DELETE /posts/:id
 router.delete('/:id', authRequired, async (req, res) => {
   const id = Number(req.params.id)
 
-  try {
-    const db = await readDb()
-    const index = db.posts.findIndex((p) => p.id === id)
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid id' })
+  }
 
-    if (index === -1) {
+  try {
+    const post = await prisma.post.findUnique({ where: { id } })
+
+    if (!post) {
       return res.status(404).json({ message: 'Post not found' })
     }
 
-    const post = db.posts[index]
     const isOwner = post.userId === req.user.id
     const isAdmin = req.user.role === 'admin'
 
@@ -231,10 +197,8 @@ router.delete('/:id', authRequired, async (req, res) => {
       return res.status(403).json({ message: 'You cannot delete this post' })
     }
 
-    db.posts.splice(index, 1)
-    db.comments = db.comments.filter((c) => c.postId !== id)
-
-    await writeDb(db)
+    await prisma.comment.deleteMany({ where: { postId: id } })
+    await prisma.post.delete({ where: { id } })
 
     res.status(204).end()
   } catch (err) {

@@ -165,7 +165,7 @@ const onDeletePost = async () => {
           <strong>{{ comment.user?.name }}</strong>
           <small class="comment-date"> · {{ formatCommentDate(comment) }}</small>
         </p>
-        <p class="comment-body">{{ comment.body }}</p>
+        <p class="comment-body">{{ comment.content }}</p>
 
         <button
           v-if="canDeleteComment(comment)"

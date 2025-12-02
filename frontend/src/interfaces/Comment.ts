@@ -4,7 +4,7 @@ export interface Comment {
   id: number
   postId: number
   userId: number
-  body: string
+  content: string
   created_at: string
   updated_at: string
   user: User | null
