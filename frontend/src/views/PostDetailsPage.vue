@@ -129,7 +129,6 @@ const onDeletePost = async () => {
 
 <template>
   <div v-if="post" class="post-wrapper">
-    <!-- TITLE BLOCK -->
     <section class="post-header box">
       <h1 class="title is-2">{{ post.title }}</h1>
       <p class="subtitle is-6">Posted by: {{ post.user.name }}</p>
@@ -146,7 +145,7 @@ const onDeletePost = async () => {
     </section>
 
     <section class="post-body box">
-      <div class="content post-text">
+      <div class="content post-text content-wrapped">
         {{ post.body }}
       </div>
     </section>
@@ -165,7 +164,7 @@ const onDeletePost = async () => {
           <strong>{{ comment.user?.name }}</strong>
           <small class="comment-date"> · {{ formatCommentDate(comment) }}</small>
         </p>
-        <p class="comment-body">{{ comment.body }}</p>
+        <p class="comment-body">{{ comment.content }}</p>
 
         <button
           v-if="canDeleteComment(comment)"
@@ -177,12 +176,13 @@ const onDeletePost = async () => {
 
       <div v-if="authStore.isUserLoggedIn" class="add-comment">
         <label class="label">Add a comment</label>
-        <textarea
-          v-model="newComment"
-          class="textarea"
-          rows="3"
-          placeholder="Write a comment..."
-        ></textarea>
+          <textarea
+            v-model="newComment"
+            class="textarea no-resize"
+            maxlength="1000"
+            rows="3"
+            placeholder="Write a comment..."
+          ></textarea>
         <button class="button is-link mt-2" @click="onAddCommentClick">Post Comment</button>
       </div>
 
@@ -245,7 +245,19 @@ const onDeletePost = async () => {
   margin-bottom: 3px;
 }
 
+.no-resize {
+  resize: none;
+}
+
 .comment-body {
   white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.content-wrapped {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 </style>

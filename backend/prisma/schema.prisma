@@ -1,0 +1,52 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  admin
+  worker
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  password   String
+  name       String
+  role       UserRole
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  posts     Post[]
+  comments  Comment[]
+}
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  title      String
+  body       String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  userId Int
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments Comment[]
+}
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  content    String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  postId Int
+  userId Int
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

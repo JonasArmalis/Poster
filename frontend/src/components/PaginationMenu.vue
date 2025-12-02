@@ -1,9 +1,8 @@
 <script setup lang="ts">
 
 const props = defineProps<{
-    totalPages: number,
-    perPage: number,
-    currentPage: number
+  totalPages: number
+  currentPage: number
 }>();
 
 const emit = defineEmits<{

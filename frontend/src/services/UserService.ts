@@ -1,7 +1,6 @@
 import httpClient from './HttpClient'
 import type { User, UserRole } from '@/interfaces/User'
 import { useAuthStore } from '@/stores/authStore'
-import { format } from 'date-fns'
 
 const END_POINT = '/users'
 
@@ -31,9 +30,7 @@ const createUser = async (
       name,
       email,
       password,
-      role,
-      created_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
-      updated_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'")
+      role
     },
     {
       headers: {
@@ -51,8 +48,7 @@ const updateUserRole = async (id: number, role: UserRole): Promise<User> => {
   const response = await httpClient.patch<User>(
     `${END_POINT}/${id}`,
     {
-      role,
-      updated_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'")
+      role
     },
     {
       headers: {

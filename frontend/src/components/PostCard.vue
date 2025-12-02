@@ -83,7 +83,7 @@ const onEditButtonClick = async () => {
         </div>
       </div>
       <div class="content">
-        <p class="preview">
+        <p class="card-text post-content">
           {{ previewContent }}
         </p>
         <time>{{ displayDate }}</time>
@@ -117,5 +117,11 @@ const onEditButtonClick = async () => {
   margin-bottom: 0.5rem;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+.post-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 </style>
