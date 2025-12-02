@@ -130,7 +130,6 @@ watch(() => modalStore.state.requestSent, (requestSent) => {
     <PaginationMenu
       v-if="postAmount && postAmount > 0"
       :totalPages="Math.ceil(postAmount / limit)"
-      :perPage="limit"
       :currentPage="currentPage"
       @pagechanged="handlePageChange"
     />

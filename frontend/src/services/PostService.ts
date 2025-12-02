@@ -1,6 +1,5 @@
 import httpClient from './HttpClient'
 import type { Post } from '../interfaces/Post'
-import { format } from 'date-fns'
 import { useAuthStore } from '@/stores/authStore'
 
 const END_POINT = '/posts'
@@ -21,7 +20,6 @@ const getAllPosts = async (
 ): Promise<{ data: Post[]; totalAmount: number }> => {
   const response = await httpClient.get<Post[]>(END_POINT, {
     params: {
-      _expand: 'user',
       _page: page,
       _limit: limit,
       q: searchValue,
@@ -45,7 +43,6 @@ const getPostsByUser = async (
 ): Promise<{ data: Post[]; totalAmount: number }> => {
   const response = await httpClient.get<Post[]>(END_POINT, {
     params: {
-      _expand: 'user',
       _page: page,
       _limit: limit,
       userId,
@@ -63,9 +60,6 @@ const getPostsByUser = async (
 
 const getPost = async (id: Number): Promise<Post> => {
   const response = await httpClient.get<Post>(`${END_POINT}/${id}`, {
-    params: {
-      _expand: 'user'
-    }
   })
   return response.data
 }
@@ -80,11 +74,8 @@ const createPost = async (title: string, content: string): Promise<Post> => {
   const response = await httpClient.post<Post>(
     END_POINT,
     {
-      title: title,
-      body: content,
-      userId: authStore.userId,
-      created_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
-      updated_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'")
+      title,
+      body: content
     },
     {
       headers: {
@@ -104,7 +95,6 @@ const editPost = async (title: string, content: string, id: number): Promise<Pos
     {
       title: title,
       body: content,
-      updated_at: format(Date.now(), "yyyy-MM-dd'T'HH:mm:ss'Z'")
     },
     {
       headers: {

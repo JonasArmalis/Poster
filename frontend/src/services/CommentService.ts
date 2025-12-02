@@ -7,8 +7,7 @@ const END_POINT = '/comments'
 const getCommentsForPost = async (postId: number): Promise<Comment[]> => {
   const response = await httpClient.get<Comment[]>(END_POINT, {
     params: {
-      postId,
-      _expand: 'user'
+      postId
     }
   })
 

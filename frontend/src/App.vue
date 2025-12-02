@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia'
 
 const modalStore = useModalStore()
 const { state } = storeToRefs(modalStore)
+const downloadDoc = new URL('./assets/ataskaita.docx', import.meta.url).href
 </script>
 
 <template>
@@ -29,6 +30,7 @@ const { state } = storeToRefs(modalStore)
         2025 © Contact us at: 
         <a href="mailto:jonasarmalis60@gmail.com">jonasarmalis60@gmail.com</a>
       </p>
+        <a :href="downloadDoc" download class="button is-info mt-2">ataskaita.docx</a>
     </footer>
 
     <NotificationWrapper />

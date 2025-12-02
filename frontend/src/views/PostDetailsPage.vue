@@ -245,10 +245,6 @@ const onDeletePost = async () => {
   margin-bottom: 3px;
 }
 
-.comment-body {
-  white-space: pre-wrap;
-}
-
 .no-resize {
   resize: none;
 }
