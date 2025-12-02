@@ -2,13 +2,14 @@ const express = require('express')
 const cors = require('cors')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { PrismaClient } = require('@prisma/client')
 
-const { readDb } = require('./database')
 const userRoutes = require('./routes/users')
 const postRoutes = require('./routes/posts')
 const commentRoutes = require('./routes/comments')
 const { JWT_SECRET } = require('./middleware/auth')
 
+const prisma = new PrismaClient()
 const app = express()
 const PORT = process.env.PORT || 4000
 
@@ -27,8 +28,9 @@ app.post('/login', async (req, res) => {
   }
 
   try {
-    const db = await readDb()
-    const user = db.users.find((u) => u.email === email)
+    const user = await prisma.user.findUnique({
+      where: { email }
+    })
 
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' })
@@ -68,15 +70,14 @@ app.use('/comments', commentRoutes)
 
 app.get('/authors', async (_req, res) => {
   try {
-    const db = await readDb()
-
-    const authors = db.users
-      .map((u) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name))
+    const authors = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true
+      },
+      orderBy: { name: 'asc' }
+    })
 
     res.json(authors)
   } catch (err) {
