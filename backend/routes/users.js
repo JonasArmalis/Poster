@@ -1,11 +1,10 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
-const { PrismaClient } = require('@prisma/client')
+const prisma = require('../prisma')
 
 const { authRequired } = require('../middleware/auth')
 const { requireAdmin } = require('../middleware/role')
 
-const prisma = new PrismaClient()
 const router = express.Router()
 
 // GET /users tik adminam

@@ -4,21 +4,19 @@ const express = require('express')
 const cors = require('cors')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { PrismaClient } = require('@prisma/client')
+const prisma = require('./prisma')
 
 const userRoutes = require('./routes/users')
 const postRoutes = require('./routes/posts')
 const commentRoutes = require('./routes/comments')
 const { JWT_SECRET } = require('./middleware/auth')
 
-const prisma = new PrismaClient()
 const app = express()
 const PORT = process.env.PORT || 4000
 
-// CORS su X-Total-Count headerio „išleidimu“, kad frontend galėtų jį nuskaityti
 app.use(
   cors({
-    origin: '*', // dev režime leidžiam viską
+    origin: '*',
     exposedHeaders: ['X-Total-Count']
   })
 )
